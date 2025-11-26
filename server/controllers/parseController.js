@@ -1,52 +1,25 @@
-import { YoutubeTranscript } from "youtube-transcript";
-import OpenAI from "openai";
-import 'dotenv/config';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { downloadVideo } from "../utils/downloadVideo.js";
+import { ingestVideo, generateRecipeJSON } from "../utils/twelveLabs.js";
 
 export const parseRecipe = async (req, res) => {
   try {
     const { url } = req.body;
-    if (!url) return res.status(400).json({ error: "Missing YouTube URL" });
+    if (!url) return res.status(400).json({ error: "Missing video URL" });
 
-    // Extract video ID
-    const videoIdMatch = url.match(/v=([^&]+)/);
-    if (!videoIdMatch) return res.status(400).json({ error: "Invalid YouTube URL" });
-    const videoId = videoIdMatch[1];
+    console.log("Downloading video...");
+    const filePath = await downloadVideo(url);
+    console.log("Video downloaded:", filePath);
 
-    // Fetch transcript
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId);
-    const transcriptText = transcript.map(t => t.text).join(" ");
-    
-    // Send transcript to OpenAI
-    const prompt = `
-    Extract a recipe from the following video transcript.
-    Return ONLY valid JSON in this exact format:
-    {
-      "title": "string",
-      "ingredients": ["string"],
-      "steps": ["string"]
-    }
+    console.log("Ingesting into TwelveLabs...");
+    const videoId = await ingestVideo(filePath);
+    console.log("Ingested videoId:", videoId);
 
-    Transcript:
-    ${transcriptText.slice(0, 7000)}  // limit tokens
-    `;
+    console.log("Generating recipe...");
+    const result = await generateRecipeJSON(videoId);
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are an assistant that extracts recipes from text." },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.3
-    });
-
-    const jsonString = completion.choices[0].message.content;
-    const recipe = JSON.parse(jsonString);
-
-    res.json(recipe);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: `Failed to parse recipe` });
+    res.json({ recipe: JSON.parse(result) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to generate recipe" });
   }
 };
