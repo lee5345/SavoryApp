@@ -1,13 +1,16 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import parseRoute from "./routes/parseRoute.js";
+import parseRoutes from "./routes/parseRoutes.js";
 
-dotenv.config();
 const app = express();
+
 app.use(cors());
 app.use(express.json());
-app.use("/api", parseRoute);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Routes
+app.use("/api/parse", parseRoutes);
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

@@ -1,25 +1,28 @@
-import { downloadVideo } from "../utils/downloadVideo.js";
-import { ingestVideo, generateRecipeJSON } from "../utils/twelveLabs.js";
+import { downloadVideo } from "../utils/download.js";
+import { ingestVideo, analyzeVideo } from "../utils/twelveLabs.js";
 
-export const parseRecipe = async (req, res) => {
+export async function parseVideoFromURL(req, res) {
   try {
     const { url } = req.body;
-    if (!url) return res.status(400).json({ error: "Missing video URL" });
 
-    console.log("Downloading video...");
+    if (!url) {
+      return res.status(400).json({ error: "Missing video URL" });
+    }
+
+    console.log("Ingesting video via URL:", url);
+
+    // Download IG video
     const filePath = await downloadVideo(url);
-    console.log("Video downloaded:", filePath);
 
-    console.log("Ingesting into TwelveLabs...");
+    // Upload to TwelveLabs -> returns videoId
     const videoId = await ingestVideo(filePath);
-    console.log("Ingested videoId:", videoId);
 
-    console.log("Generating recipe...");
-    const result = await generateRecipeJSON(videoId);
+    // Ask Pegasus to extract recipe JSON
+    const recipe = await analyzeVideo(videoId);
 
-    res.json({ recipe: JSON.parse(result) });
+    res.json({ recipe });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to generate recipe" });
+    console.error("Parse error:", err);
+    res.status(500).json({ error: err.message });
   }
-};
+}
