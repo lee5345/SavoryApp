@@ -2,6 +2,11 @@
 
 SavoryApp is a mobile application that helps users save and revisit recipes extracted from social media videos. By submitting a recipe video URL, users can automatically analyze the content and build a personal recipe collection, similar to an Instagram-style profile for food inspiration.
 
+<img width="236" height="513" alt="IMG_1798" src="https://github.com/user-attachments/assets/06f440b7-529f-4595-b776-3060f86b9b0e" />
+<img width="236" height="513" alt="IMG_1799" src="https://github.com/user-attachments/assets/d2222bc4-bf77-4246-804e-3165311e2b40" />
+<img width="236" height="513" alt="IMG_1801" src="https://github.com/user-attachments/assets/e08933ef-4cf4-4310-b44f-e47bd8e6cc5e" />
+<img width="236" height="513" alt="IMG_1802" src="https://github.com/user-attachments/assets/72dd1e9a-8921-4563-adce-40964d0acb99" />
+
 ## Features
 
 - Submit recipe video URLs for analysis
